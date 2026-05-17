@@ -1,6 +1,6 @@
 import { apiRequest } from "./client";
 
-export type BlogStatus = "draft" | "publish";
+export type BlogStatus = "draft" | "published";
 
 export type Blog = {
   id: string;
@@ -16,18 +16,33 @@ export type BlogPayload = {
   title: string;
   content: string;
   cover_image_url: string;
-  status: BlogStatus;
 };
 
-export const getBlogs = () => apiRequest<Blog[]>("/posts");
+export type Pagination = {
+  current_page: number;
+  next_page: number | null;
+  prev_page: number | null;
+  total_pages: number;
+  total_count: number;
+};
 
-export const getBlog = (id: string) => apiRequest<Blog>(`/blogs/${id}`);
+export const getBlogs = (page = 1) =>
+  apiRequest<{ data: Blog[]; pagination: Pagination }>(`/posts?page=${page}`);
+
+export const getBlog = (id: string) =>
+  apiRequest<{ data: Blog }>(`/posts/${id}`);
 
 export const createBlog = (payload: BlogPayload) =>
-  apiRequest<Blog>("/blogs", { method: "POST", body: payload });
+  apiRequest<Blog>("/posts", { method: "POST", body: payload });
 
 export const updateBlog = (id: string, payload: BlogPayload) =>
-  apiRequest<Blog>(`/blogs/${id}`, { method: "PUT", body: payload });
+  apiRequest<Blog>(`/posts/${id}`, { method: "PUT", body: payload });
 
 export const deleteBlog = (id: string) =>
-  apiRequest<void>(`/blogs/${id}`, { method: "DELETE" });
+  apiRequest<void>(`/posts/${id}`, { method: "DELETE" });
+
+export const publishBlog = (id: string) =>
+  apiRequest<Blog>(`/posts/${id}/publish`, { method: "PATCH" });
+
+export const unpublishBlog = (id: string) =>
+  apiRequest<Blog>(`/posts/${id}/unpublish`, { method: "PATCH" });
